@@ -27,7 +27,17 @@ jobs:
             name: Build dockerfile (with push)
             run: |
                 docker buildx build \
-                --platform=linux/amd64,linux/arm/v7,linux/arm64 \
+                --platform=linux/amd64 \
                 --output "type=image,push=true" \
                 --file ./Dockerfile . \
                 --tag dpippenger/fluentd:latest
+        - 
+            name: Scan Image Using Anchore
+            uses: anchore/scan-action@master
+            with:
+                image-reference: "dpippenger/fluentd:latest"
+                dockerfile-path: "./Dockerfile"
+                fail-build: false
+        - 
+           name: anchore inline scan JSON results
+           run: for j in `ls ./anchore-reports/*.json`; do echo "---- ${j} ----"; cat ${j}; echo; done
